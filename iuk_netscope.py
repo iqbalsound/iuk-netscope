@@ -45,8 +45,24 @@ def find_exe(name):
     return None
 
 
+def fix_stdio():
+    """Make printing safe on any console: UTF-8 output, never raise on characters the codepage lacks."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            if stream is not None:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError, OSError):
+            pass
+
+
 if IS_WIN:
     os.system("")   # enables ANSI colours in the Windows console
+    try:
+        import ctypes
+        ctypes.windll.kernel32.SetConsoleOutputCP(65001)   # UTF-8 so the box characters display
+    except Exception:
+        pass
+fix_stdio()
 
 # --------------------------------------------------------------------------- themes
 THEMES = {
