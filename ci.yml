@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux - tests and packages
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk python3-reportlab nmap xvfb iputils-ping iproute2 dnsutils rpm
+
+      - name: Compile
+        run: python3 -m py_compile iuk_netscope.py iuk_netscope_gui.py
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: GUI smoke test (virtual display)
+        run: xvfb-run -a python3 tests/gui_smoke.py
+
+      - name: CLI smoke test
+        run: |
+          python3 iuk_netscope.py --version
+          python3 iuk_netscope.py --no-color doctor </dev/null
+          python3 iuk_netscope.py --no-color ping 127.0.0.1 -c 2
+          python3 iuk_netscope.py --no-color ports 127.0.0.1 --top 20
+
+      - name: Build DEB and RPM
+        run: |
+          bash packaging/build_deb.sh
+          bash packaging/build_rpm.sh
+
+      - name: Install the DEB and run it
+        run: |
+          sudo apt-get install -y ./dist/*.deb
+          iuk-netscope --version
+
+  windows:
+    name: Windows - tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install reportlab
+        run: python -m pip install reportlab
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
