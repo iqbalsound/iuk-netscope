@@ -63,3 +63,11 @@ git tag v0.0.1 && git push origin v0.0.1             # Release workflow builds +
 ```
 Repo setting to check once: *Settings > Actions > General > Workflow permissions* = "Read and write" (the release job also requests `contents: write` itself).
 To release a new version: change `__version__`, update `CHANGELOG.md`, commit, then tag `vX.Y.Z`.
+
+## If GitHub Actions does not start
+1. The folder must be exactly `.github/workflows/ci.yml` and `release.yml` at the repo root. It is a hidden folder:
+   copy the whole project (`cp -a`, or unzip the source zip) and check with `ls -a` and `git ls-files | grep github`.
+2. `ci.yml` runs on every push and pull request. `release.yml` runs ONLY when a tag `v*` is pushed (or via *Actions > Release > Run workflow*).
+3. A tag pushed before the workflow files were committed starts nothing. Re-create it:
+   `git tag -d v0.0.1; git push origin :refs/tags/v0.0.1; git tag v0.0.1; git push origin v0.0.1`
+4. *Settings > Actions > General* must allow actions ("Allow all actions") and Workflow permissions = "Read and write".

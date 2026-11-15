@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=IUK-NetScope
+GenericName=Network Scanner
+Comment=Wi-Fi, Bluetooth, USB and network scanner with nmap (by Iqbal Uddin Khan)
+Exec=iuk-netscope
+Icon=iuk-netscope
+Terminal=false
+Categories=Network;Security;System;
+Keywords=nmap;scanner;wifi;bluetooth;usb;arp;ping;
+StartupNotify=true
